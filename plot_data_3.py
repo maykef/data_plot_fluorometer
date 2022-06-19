@@ -3,12 +3,14 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 from scipy.signal import find_peaks
 
+
 # A parser is required to translate the timestamp
-custom_date_parser = lambda x: datetime.strptime(x, '%d-%m-%Y %H:%M_%S.%f')
+def custom_date_parser(a):
+    return datetime.strptime(a, '%d-%m-%Y %H:%M_%S.%f')
 
 
 df = pd.read_csv(
-    '~/Downloads/Basil_Trial/19-06-2022_05_00.csv',
+    '~/Downloads/Fluorometer/Basil_Trial/19-06-22/19-06-2022_05_00.csv',
     parse_dates=['Timestamp'],
     date_parser=custom_date_parser)
 x = df['Timestamp']
@@ -34,7 +36,7 @@ valleys, _ = find_peaks(-y, prominence=1)
 time_window_size = pd.Timedelta(4000, unit="ms")
 time_of_peaks = x[peaks]
 peak_start = x.searchsorted(time_of_peaks - time_window_size)
-# in case of evenly spaced data points, this can be simplified
+# in case of evenly spaced data points, this can be simplified,
 # and you just add n data points to your peak index array
 # peak_start = peaks - n
 true_valleys = peaks.copy()
@@ -57,13 +59,11 @@ for index, val in enumerate(y[peaks], start=1):
 for index, val in enumerate(y[true_valleys], start=1):
     print(index, val)
 
-
 # PSII Formula Fq'/Fm' (as per nomenclature of Murchie & Lawson 2013)
 PSII = (last_peak - last_valley) / last_peak
 
 # NPQ Formula (Fm - Fm')/Fm' as per Murchie & Lawson 2013
 NPQ = (first_peak - last_peak) / last_peak
-
 
 print(first_peak)
 print(first_valley)
@@ -71,8 +71,8 @@ print(last_peak)
 print(last_valley)
 print('The PSII is:', PSII)
 print('The NPQ is:', NPQ)
-pd.DataFrame({'True Valleys': y[true_valleys], 'Peaks': y[peaks]}).to_csv\
-    ('~/Downloads/Basil_Trial/19-06-2022_05_00_peaks_valleys.csv', index=False)
+pd.DataFrame({'True Valleys': y[true_valleys], 'Peaks': y[peaks]})\
+    .to_csv('~/Downloads/Fluorometer/Basil_Trial/19-06-22/19-06-2022_05_00_peaks_valleys.csv', index=False)
 ax2.plot(x[true_valleys], y[true_valleys], "sr")
 ax2.plot(x, y)
 ax2.legend(['F′'])
